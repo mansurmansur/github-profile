@@ -32,6 +32,9 @@ body{
     display: flex;
     justify-content: space-between;
 }
+.hide{
+    display: none;
+}
 #search{
     width: 100%;
     padding: 5px;
@@ -43,8 +46,10 @@ body{
     font-family: 'Poppins', sans-serif;
 }
 .user-profile{
-    padding: 20px;
     min-height: 300px;
+}
+.user-profile .card{
+    padding: 40px;
 }
 .avatar{
     width: 130px;
