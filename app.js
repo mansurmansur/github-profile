@@ -8,59 +8,73 @@ const SearchElement = document.querySelector('#search');
 // function name: getData
 // make api a call to gihub api to get the user info 
 async function getData(username){
-    const result = fetch(`https://api.github.com/users/${username}`);
-    
-    result.then((response) => response.json()).then(
-        //update info
-        result => {
-            let userCard = `
-                                <div class="card">
-                                    <div class="profile-image">
-                                        <img src=${result['avatar_url']} class="avatar" alt="">
-                                    </div>
-                                    <div class="profile-info">
-                                        <div>
-                                            <p class="name">${result['name']}</p>
-                                        </div>
-                                        <div>
-                                            <p class="bio">
-                                                ${result['bio']}
-                                            </p>
-                                        </div>
-                                        <div class="more-info">
-                                            <p><span class="followers"> ${result['following']}</span> Following</p>
-                                            <p><span class="following"> ${result['followers']}</span> Followers</p>
-                                            <p><span class="Repos">${result['public_repos']}</span> Repos</p>
-                                        </div>
-                                        <div class="links">
-                                        ${getRepos(username)}
-                                        </div>
-                                    </div>
-                                </div>
-                            `
-            
-            CardElement.innerHTML = userCard;
+    const result =  fetch(`https://api.github.com/users/${username}`);
 
-        }
-    )
+    //error check
+    if((await result).status === 200){
+        return (await result).json();
+    } else{
+        return null;
+    } 
 }
 
 // function name: getRepos
 // get popular repositories
-async function getRepos(username){
-   fetch(`https://api.github.com/users/${username}/repos`)
-    .then(response => response.json())
-    .then(list => {
-        let temp = ``;
+async function getRepos(username='mansurmansur'){
+    let repos = null;
 
-        list.forEach(link => {
-        temp += `<a href="${link['html_url']}>${link['name']}</a>`})
+   const result = fetch(`https://api.github.com/users/${username}/repos`);
 
-        return temp;
-     })
+   if((await result).status === 200){
+    return (await result).json();
+   } else {
+    return null;
+   }
 }
 
-console.log(getRepos('mansurmansur'))
+//render the profile
+async function renderProfile(username){
+    //make the calls
+    const userData = await getData(username);
+    const repos = await getRepos(username);
+    //update if the data is fetched
+    if (userData !== null && repos !== null) {
+      let temp = ``;
+      repos.forEach((element) => {
+        temp += `<a href="${element["html_url"]}>${element["name"]}</a>`;
+      });
+      let userCard = `
+        <div class="card">
+            <div class="profile-image">
+                <img src=${userData["avatar_url"]} class="avatar" alt="">
+            </div>
+            <div class="profile-info">
+                <div>
+                    <p class="name">${userData["name"]}</p>
+                </div>
+                <div>
+                    <p class="bio">
+                        ${userData["bio"]}
+                    </p>
+                </div>
+                <div class="more-info">
+                    <p><span class="followers"> ${userData["following"]}</span> Following</p>
+                    <p><span class="following"> ${userData["followers"]}</span> Followers</p>
+                    <p><span class="Repos">${userData["public_repos"]}</span> Repos</p>
+                </div>
+                <div class="links">
+                ${temp}
+                </div>
+            </div>
+        </div>
+        `;
+       CardElement.innerHTML = userCard;
+
+       return true;
+    } else{
+        return false;
+    }
+}
 
 // implement search function
 SearchForm.addEventListener('submit', ev => {
@@ -68,9 +82,8 @@ SearchForm.addEventListener('submit', ev => {
 
     //get input value
     //the lenght should be not more than 39 characters
-
     if(SearchElement.value != ''){
-        getData(SearchElement.value)
+        renderProfile(SearchElement.value);
     } else{
 
     }
